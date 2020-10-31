@@ -1,18 +1,29 @@
 [
-    {
-      "question": "What was Tandem previous name?",
-      "incorrect": ["Tandem", "Burger Shack", "Extraordinary Humans"],
-      "correct": "Devmynd"
-    },
-    {
-      "question": "What is the top speed an average cat can travel?",
-      "incorrect": ["42 mph", "13 mph", "9 mph"],
-      "correct": "31 mph"
-    },
-    {
-      "question": "What is the top speed an average cat can travel?",
-      "incorrect": ["42 mph", "13 mph", "9 mph"],
-      "correct": "31 mph"
-    }
-  ]
-  
+  {
+    "question": "Here we have three questions, but only two are valid, since the third one is a duplicate of the second",
+      "incorrect": [
+      "Tandem",
+      "Burger Shack",
+      "Extraordinary Humans"
+    ],
+    "correct": "Devmynd"
+  },
+  {
+    "question": "DUPLICATE",
+    "incorrect": [
+      "42 mph",
+      "13 mph",
+      "9 mph"
+    ],
+    "correct": "31 mph"
+  },
+  {
+    "question": "DUPLICATE",
+    "incorrect": [
+      "42 mph",
+      "13 mph",
+      "9 mph"
+    ],
+    "correct": "31 mph"
+  }
+]

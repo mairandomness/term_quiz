@@ -211,25 +211,23 @@ class Game:
         print(self.term.center(
             "  |_|                                 |___/                      "))
 
+    def run_game(self):
+        """ Run the game!!! """
+        self.set_questions()
 
-def run_game():
-    """ Run the game!!! """
+        with self.term.fullscreen():
+            self.print_welcome()
 
-    quiz = Game()
-    quiz.set_data('Apprentice_TandemFor400_Data.json')
-    quiz.set_questions()
-
-    with quiz.term.fullscreen():
-        quiz.print_welcome()
-
-        while quiz.curr_question < len(quiz.questions):
-            quiz.print_question()
-            answers = quiz.get_shuffled_answers()
-            inp = quiz.get_input(answers)
-            quiz.check_answer(inp)
-            quiz.print_new_score()
-            quiz.curr_question += 1
+            while self.curr_question < len(self.questions):
+                self.print_question()
+                answers = self.get_shuffled_answers()
+                inp = self.get_input(answers)
+                self.check_answer(inp)
+                self.print_new_score()
+                self.curr_question += 1
 
 
 if __name__ == '__main__':
-    run_game()
+    quiz = Game()
+    quiz.set_data('Apprentice_TandemFor400_Data.json')
+    quiz.run_game()
