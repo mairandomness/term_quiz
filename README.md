@@ -27,7 +27,9 @@ cd term_quiz
 ```
 python3 quiz.py
 ```
-    or
+
+or
+
 ```
 chmod +x quiz.py
 ./quiz.py
@@ -46,7 +48,9 @@ cd term_quiz
 ```
 python3 test.py
 ```
-    or
+
+or
+
 ```
 chmod +x test.py
 ./quiz.py
