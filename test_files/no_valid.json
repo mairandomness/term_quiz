@@ -1,0 +1,58 @@
+[
+  {
+    "question": "category names are wrong",
+    "incorrec": [
+      "Iacta alea est!",
+      "Vidi, vini, vici",
+      "Aegri somnia vana"
+    ],
+    "correct": "Et tu, Brute?"
+  },
+  {
+    "question": "wrong number of incorrect alternatives",
+    "incorrect": [
+      "Tandem"
+    ],
+    "correct": "Devmynd"
+  },
+  {
+    "question": 132,
+    "incorrect": [
+      "wrong type for question",
+      "Pride",
+      "Destruction"
+    ],
+    "correct": "Ambush"
+  },
+  {
+    "question": "wrong number of incorrect alternatives",
+    "incorrect": [
+      "42 mph",
+      "13 mph",
+      "9 mph",
+      "$0.25"
+    ],
+    "correct": "31 mph"
+  },
+  {
+    "question": "wrong type for correct alternatives",
+    "incorrect": [
+      "3",
+      "9",
+      "7"
+    ],
+    "correct": [
+      "5",
+      "8"
+    ]
+  },
+  {
+    "question": "correct alternative shows up in incorrect field",
+    "incorrect": [
+      "M",
+      "Z",
+      "Q"
+    ],
+    "correct": "Q"
+  }
+]

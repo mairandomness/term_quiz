@@ -36,27 +36,57 @@ class Game:
         self.data = []
         for line in original_data:
             if set(line.keys()) == set(['question', 'incorrect', 'correct']) and \
-                    len(line['incorrect']) == 3 and \
-                    isinstance(line['correct'], str) and \
+                    len(set(line['incorrect'])) == 3 and \
+                    isinstance(line['incorrect'], list) and \
                     isinstance(line['question'], str) and \
+                    isinstance(line['correct'], str) and \
+                    isinstance(line['incorrect'][0], str) and \
+                    isinstance(line['incorrect'][1], str) and \
+                    isinstance(line['incorrect'][2], str) and \
+                    line['correct'] not in line['incorrect'] and \
                     line not in self.data:
                 self.data.append(line)
 
         # Make sure we have enough questions
-        if len(self.data) < 10:
-            print("The JSON offered doesn't give us enough questions for a round. \
-                Please try again with another?")
+        if len(self.data) == 0:
+            print(self.term.home + self.term.clear +
+                  self.term.move_y(self.term.height // 2))
+            print(self.term.black_on_darkkhaki(self.term.center(
+                "The source file didn't give me any good questions ;-; sorry and good bye")))
+
+        elif len(self.data) < 10:
+            print(self.term.home + self.term.clear +
+                  self.term.move_y(self.term.height // 2))
+            print(self.term.black_on_darkkhaki(self.term.center(
+                "The source file didn't give me enough questions for a full round of questions :(")))
+            print(self.term.black_on_darkkhaki(self.term.center(
+                "The game will continue but will only have {} questions".format(len(self.data)))))
 
     def set_question_order(self):
-        """ Creates 10 random unique numbers as a selection of our questions """
-        population = [i for i in range(len(self.data))]
-        self.question_order = random.sample(population, k=10)
+        """ Creates 10 (or less in case not enough questions are available)
+        random unique numbers as a selection of our questions """
+        population = list(range(len(self.data)))
+        self.question_order = random.sample(
+            population, k=min(10, len(self.data)))
 
     def set_answer_order_and_correct_selection(self):
-        """ Creates a random ordering to display the answer options and saves
-        the correct one """
+        """ Creates a random ordering to display the answer options """
         self.answer_order = [0, 1, 2, 3]
         random.shuffle(self.answer_order)
+
+    def print_welcome(self):
+        """ Prints the welcome screen """
+        print(self.term.home + self.term.clear +
+              self.term.move_y(self.term.height // 2))
+        print(self.term.black_on_darkkhaki(self.term.center(
+            'Hello! Welcome to this trivia game :D')))
+        print(self.term.black_on_darkkhaki(
+            self.term.center('We are doing {} questions!'.format(min(10, len(self.data))))))
+        print(self.term.black_on_darkkhaki(
+            self.term.center(self.term.blink('press any key to continue'))))
+
+        with self.term.cbreak(), self.term.hidden_cursor():
+            inp = self.term.inkey()
 
     def print_question(self):
         """ Prints a question to the terminal """
@@ -148,11 +178,12 @@ class Game:
             inp = self.term.inkey()
 
         # End game messages
-        if self.curr_question == 9:
+        if self.curr_question == len(self.question_order) - 1:
             print(self.term.black_on_darkkhaki(
                 self.term.center(self.term.bold("END OF GAME!".format(self.score)))))
             print(self.term.black_on_darkkhaki(
-                self.term.center(self.term.bold("Your total score is {}/10 point(s)!!".format(self.score)))))
+                self.term.center(self.term.bold("Your total score is {}/{} point(s)!!"
+                                                .format(self.score, len(self.question_order))))))
             if self.score == 10:
                 self.print_perfect()
         else:
@@ -194,19 +225,9 @@ def run_game():
     quiz.set_question_order()
 
     with quiz.term.fullscreen():
-        print(quiz.term.home + quiz.term.clear +
-              quiz.term.move_y(quiz.term.height // 2))
-        print(quiz.term.black_on_darkkhaki(quiz.term.center(
-            'Hello! Welcome to this trivia game :D')))
-        print(quiz.term.black_on_darkkhaki(
-            quiz.term.center('We are doing 10 questions!')))
-        print(quiz.term.black_on_darkkhaki(
-            quiz.term.center(quiz.term.blink('press any key to continue'))))
+        quiz.print_welcome()
 
-        with quiz.term.cbreak(), quiz.term.hidden_cursor():
-            inp = quiz.term.inkey()
-
-        while quiz.curr_question < 10:
+        while quiz.curr_question < min(10, len(quiz.data)):
             quiz.print_question()
             quiz.print_alternatives()
             quiz.get_input()
