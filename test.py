@@ -20,20 +20,20 @@ class TestQuiz(unittest.TestCase):
 
 
 
-    def test_set_question_order(self):
+    def test_set_questions(self):
         quiz = Game()
-        quiz.set_question_order()
-        self.assertEqual(quiz.question_order, [])
+        quiz.set_questions()
+        self.assertEqual(quiz.questions, [])
 
         quiz = Game()
         quiz.set_data("test_files/two_questions.json")
-        quiz.set_question_order()
-        self.assertEqual(len(quiz.question_order), 2)
+        quiz.set_questions()
+        self.assertEqual(len(quiz.questions), 2)
 
         quiz = Game()
         quiz.set_data("test_files/twenty_questions.json")
-        quiz.set_question_order()
-        self.assertEqual(len(quiz.question_order), 10)
+        quiz.set_questions()
+        self.assertEqual(len(quiz.questions), 10)
 
 if __name__ == '__main__':
     unittest.main()

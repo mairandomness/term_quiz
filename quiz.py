@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
+""" This is a quiz program that uses multiple choice questions """
+
 import json
 import random
 from blessed import Terminal
-
-""" This is a quiz program that uses multiple choice questions """
 
 
 class Game:
@@ -12,20 +12,14 @@ class Game:
 
     def __init__(self):
         self.term = Terminal()
-        self.selection = 0
-        self.selection_in_progress = True
-        self.xy = (0, 0)
         self.score = 0
+        self.answer_pos = (0, 0)
         self.data = []
-        self.question_order = []
         self.curr_question = 0
-        self.answers = []
-        self.answer_order = []
-        self.correct_selection = 0
+        self.questions = []
 
     def set_data(self, filepath):
-        """
-        Opens a JSON file and creates a list of dictionaries with keys being
+        """ Opens a JSON file and creates a list of dictionaries with keys being
         'question', 'incorrect' (3 options) and 'correct'."""
 
         # First, let's open and parse the JSON file
@@ -51,151 +45,150 @@ class Game:
         if len(self.data) == 0:
             print(self.term.home + self.term.clear +
                   self.term.move_y(self.term.height // 2))
-            print(self.term.black_on_darkkhaki(self.term.center(
-                "The source file didn't give me any good questions ;-; sorry and good bye")))
+            self.print_alert(
+                "The source file didn't give me any good questions ;-; sorry and good bye")
 
         elif len(self.data) < 10:
             print(self.term.home + self.term.clear +
                   self.term.move_y(self.term.height // 2))
-            print(self.term.black_on_darkkhaki(self.term.center(
-                "The source file didn't give me enough questions for a full round of questions :(")))
-            print(self.term.black_on_darkkhaki(self.term.center(
-                "The game will continue but will only have {} questions".format(len(self.data)))))
+            self.print_alert(
+                "The source file didn't give me enough questions for a full round of questions :(")
+            self.print_alert(
+                "The game will continue but will only have {} questions".format(len(self.data)))
 
-    def set_question_order(self):
-        """ Creates 10 (or less in case not enough questions are available)
-        random unique numbers as a selection of our questions """
-        population = list(range(len(self.data)))
-        self.question_order = random.sample(
-            population, k=min(10, len(self.data)))
+    def set_questions(self):
+        """ Creates a list of 10 (or less in case not enough questions are available)
+        random unique questions """
+        self.questions = random.sample(
+            self.data, k=min(10, len(self.data)))
 
-    def set_answer_order_and_correct_selection(self):
+    def get_shuffled_answers(self):
         """ Creates a random ordering to display the answer options """
-        self.answer_order = [0, 1, 2, 3]
-        random.shuffle(self.answer_order)
+        answers = self.questions[self.curr_question]['incorrect'] + \
+            [self.questions[self.curr_question]['correct']]
+        random.shuffle(answers)
+        return answers
+
+    def get_any_key(self):
+        """ Wait for any key input """
+        with self.term.cbreak(), self.term.hidden_cursor():
+            self.term.inkey()
+
+    def print_alert(self, message, bold=False, blink=False):
+        """ Prints message in the alert styling, bold and blink optional """
+        if bold and blink:
+            print(
+                self.term.black_on_darkkhaki(self.term.bold(
+                    self.term.blink(self.term.center(message)))))
+        elif bold:
+            print(
+                self.term.black_on_darkkhaki(self.term.bold(self.term.center(message))))
+        elif blink:
+            print(
+                self.term.black_on_darkkhaki(self.term.blink(self.term.center(message))))
+        else:
+            print(self.term.black_on_darkkhaki(self.term.center(message)))
 
     def print_welcome(self):
         """ Prints the welcome screen """
         print(self.term.home + self.term.clear +
               self.term.move_y(self.term.height // 2))
-        print(self.term.black_on_darkkhaki(self.term.center(
-            'Hello! Welcome to this trivia game :D')))
-        print(self.term.black_on_darkkhaki(
-            self.term.center('We are doing {} questions!'.format(min(10, len(self.data))))))
-        print(self.term.black_on_darkkhaki(
-            self.term.center(self.term.blink('press any key to continue'))))
-
-        with self.term.cbreak(), self.term.hidden_cursor():
-            inp = self.term.inkey()
+        self.print_alert('Hello! Welcome to this trivia game :D')
+        self.print_alert('We are doing {} questions!'.format(
+            len(self.questions)))
+        self.print_alert('press any key to continue', blink=True)
+        self.get_any_key()
 
     def print_question(self):
         """ Prints a question to the terminal """
-        # Randomize the answer choices ordering
-        self.set_answer_order_and_correct_selection()
-
         # Print the terminal screen
         print(self.term.home + self.term.clear)
-        print(self.term.black_on_darkkhaki(
-            self.term.center(self.term.bold("YOUR CURRENT SCORE {}".format(self.score)))))
+        self.print_alert("YOUR CURRENT SCORE {}".format(self.score), bold=True)
         print(self.term.down(5))
         print(self.term.bold(" Question {}".format(self.curr_question + 1)))
         print(self.term.down(2))
 
-        question = self.data[self.question_order[self.curr_question]]
-        # Note that answers[3] is the correct answer
-        self.answers = question['incorrect'] + [question['correct']]
-        self.correct_answer = question['correct']
-        self.correct_selection = self.answer_order.index(3)
-
         # Print the actual question
-        print(" {}".format(question['question']))
+        print(" " + self.questions[self.curr_question]['question'])
         print(self.term.down(2))
 
         # Save the cursor position
-        self.xy = self.term.get_location()
+        self.answer_pos = self.term.get_location()
 
-        # Reset the selection
-        self.selection = 0
-
-    def print_alternatives(self):
+    def print_alternatives(self, answers, selection):
         """ Prints the alternatives to the terminal, with the selected line
         being highlighted """
 
-        y, x = self.xy
+        y, x = self.answer_pos
 
         # Prints the alternatives according to the selection
-        for j, i in enumerate(self.answer_order):
-            if j == self.selection:
+        for j, answer in enumerate(answers):
+            if j == selection:
                 print(self.term.move_xy(x, y + j) + self.term.bold(self.term.darkkhaki(
-                    " > {}".format(self.answers[i]))))
+                    " > {}".format(answer))))
             else:
                 print(self.term.move_xy(x, y + j) +
-                      "   {}".format(self.answers[i]))
+                      "   {}".format(answer))
 
-    def get_input(self):
+    def get_input(self, answers):
         """ Gets the user input """
 
         # A loop to get the user input
+        selection = 0
         with self.term.cbreak(), self.term.hidden_cursor():
-            while self.selection_in_progress:
+            while True:
+                # Update alternative display
+                self.print_alternatives(answers, selection)
                 key = self.term.inkey()
-                if key.name == 'KEY_TAB':
-                    self.selection += 1
-                if key.name == 'KEY_DOWN':
-                    self.selection += 1
-                if key.name == 'KEY_UP':
-                    self.selection -= 1
-                if key.name == 'KEY_ENTER':
-                    self.selection_in_progress = False
+                if key.name in ('KEY_TAB', 'KEY_DOWN'):
+                    selection += 1
+                elif key.name == 'KEY_UP':
+                    selection -= 1
+                elif key.name == 'KEY_ENTER':
+                    break
                 # Since there are only 4 options for the selection, let's make sure
                 # it's in the correct range
-                self.selection = self.selection % 4
+                selection = selection % 4
 
-                # Update screen
-                self.print_alternatives()
+        return answers[selection]
 
-        # Reset selection_in_progress
-        self.selection_in_progress = True
-
-    def check_answer(self):
+    def check_answer(self, answer):
         """ Compares user answer and responds accordingly """
 
         print(self.term.down(2))
 
         # Compare the user input
-        if self.selection == self.correct_selection:
+        if answer == self.questions[self.curr_question]['correct']:
             self.score += 1
 
-            print(self.term.black_on_darkkhaki(
-                self.term.center("Nice job! You got it right!")))
+            self.print_alert("Nice job! You got it right!")
         else:
-            print(self.term.black_on_darkkhaki(self.term.center(
-                "You got it wrong, the correct answer was: ")))
-            print(self.term.black_on_darkkhaki(self.term.center(
-                self.term.bold("{}".format(self.correct_answer)))))
+            self.print_alert("You got it wrong, the correct answer was: ")
+            self.print_alert(
+                self.questions[self.curr_question]['correct'], bold=True)
 
-        with self.term.cbreak(), self.term.hidden_cursor():
-            inp = self.term.inkey()
+        self.get_any_key()
 
+    def print_new_score(self):
+        """ Prints messages after each question is answered """
         # End game messages
-        if self.curr_question == len(self.question_order) - 1:
-            print(self.term.black_on_darkkhaki(
-                self.term.center(self.term.bold("END OF GAME!".format(self.score)))))
-            print(self.term.black_on_darkkhaki(
-                self.term.center(self.term.bold("Your total score is {}/{} point(s)!!"
-                                                .format(self.score, len(self.question_order))))))
-            if self.score == 10:
-                self.print_perfect()
-        else:
-            print(self.term.black_on_darkkhaki(
-                self.term.center("Your score is {} point(s) now.".format(self.score))))
+        if self.curr_question == len(self.questions) - 1:
+            self.print_alert("END OF GAME!", bold=True)
+            self.print_alert("Your total score is {}/{} point(s)!!".format(
+                self.score, len(self.questions)), bold=True)
 
-        self.term.move_y(0)
+            if self.score == len(self.questions):
+                self.print_perfect()
+
+        # Or just update the player on their score
+        else:
+            self.print_alert(
+                "Your score is {} point(s) now.".format(self.score))
+
         print(self.term.move_xy(0, 1) + self.term.black_on_darkkhaki(
             self.term.center(self.term.bold("YOUR CURRENT SCORE {}".format(self.score)))))
 
-        with self.term.cbreak(), self.term.hidden_cursor():
-            inp = self.term.inkey()
+        self.get_any_key()
 
     def print_perfect(self):
         """ Prints a treat for a perfect game """
@@ -220,18 +213,21 @@ class Game:
 
 
 def run_game():
+    """ Run the game!!! """
+
     quiz = Game()
     quiz.set_data('Apprentice_TandemFor400_Data.json')
-    quiz.set_question_order()
+    quiz.set_questions()
 
     with quiz.term.fullscreen():
         quiz.print_welcome()
 
-        while quiz.curr_question < min(10, len(quiz.data)):
+        while quiz.curr_question < len(quiz.questions):
             quiz.print_question()
-            quiz.print_alternatives()
-            quiz.get_input()
-            quiz.check_answer()
+            answers = quiz.get_shuffled_answers()
+            inp = quiz.get_input(answers)
+            quiz.check_answer(inp)
+            quiz.print_new_score()
             quiz.curr_question += 1
 
 
