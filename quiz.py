@@ -124,7 +124,7 @@ class Game:
         # Prints the alternatives according to the selection
         for j, answer in enumerate(answers):
             if j == selection:
-                print(self.term.move_xy(x, y + j) + self.term.bold(self.term.darkkhaki(
+                print(self.term.move_xy(x, y + j) + self.term.bold(self.term.reverse(
                     " > {}".format(answer))))
             else:
                 print(self.term.move_xy(x, y + j) +
@@ -213,9 +213,8 @@ class Game:
 
     def run_game(self):
         """ Run the game!!! """
-        self.set_questions()
-
         with self.term.fullscreen():
+            self.set_questions()
             self.print_welcome()
 
             while self.curr_question < len(self.questions):
