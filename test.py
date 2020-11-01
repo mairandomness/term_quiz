@@ -14,14 +14,14 @@ class TestQuiz(unittest.TestCase):
         quiz = Game()
         quiz.set_data("test_files/no_valid.json")
         self.assertEqual(len(quiz.data), 0)
-        self.assertEqual(len(io.print_alert.call_args_list), 1)
+        self.assertEqual(io.print_alert.call_count, 1)
         self.assertIn("good bye", io.print_alert.call_args[0][0])
 
         io.reset_mock()
         quiz = Game()
         quiz.set_data("test_files/two_questions.json")
         self.assertEqual(len(quiz.data), 2)
-        self.assertEqual(len(io.print_alert.call_args_list), 2)
+        self.assertEqual(io.print_alert.call_count, 2)
         self.assertIn("will continue", io.print_alert.call_args[0][0])
 
         io.reset_mock()
@@ -86,34 +86,48 @@ class TestQuiz(unittest.TestCase):
             quiz.score = 0
 
     def test_run_game(self, mock_io):
-        io = mock_io
+        io = mock_io()
 
         io.reset_mock()
         quiz = Game()
         quiz.run_game()
         io.print_alert.assert_not_called()
+        self.assertEqual(quiz.score, 0)
 
         io.reset_mock()
         quiz = Game()
         quiz.set_data("test_files/no_valid.json")
         quiz.run_game()
-        self.assertEqual(len(io.print_alert.call_args_list), 1)
+        self.assertEqual(io.print_alert.call_count, 1)
         io.print_question.assert_not_called()
         io.print_alternatives.assert_not_called()
+        self.assertEqual(quiz.score, 0)
 
         io.reset_mock()
         quiz = Game()
         quiz.set_data("test_files/two_questions.json")
         quiz.run_game()
-        self.assertEqual(len(io.print_question.call_args_list), 2)
-        self.assertEqual(len(io.print_alternatives.call_args_list), 2)
+        self.assertEqual(io.print_question.call_count, 2)
+        self.assertEqual(io.get_input.call_count, 2)
+        self.assertEqual(quiz.score, 0)
 
         io.reset_mock()
         quiz = Game()
+        quiz.set_data("test_files/twenty_questions.json")
+        quiz.run_game()
+        self.assertEqual(io.print_question.call_count, 10)
+        self.assertEqual(io.get_input.call_count, 10)
+        self.assertEqual(quiz.score, 0)
+
+        io.reset_mock()
+        io.get_input.return_value = "Devmynd"
+        quiz = Game()
         quiz.set_data("test_files/two_questions.json")
         quiz.run_game()
-        self.assertEqual(len(io.print_question.call_args_list), 10)
-        self.assertEqual(len(io.print_alternatives.call_args_list), 10)
+        self.assertEqual(io.print_question.call_count, 2)
+        self.assertEqual(io.get_input.call_count, 2)
+        self.assertEqual(quiz.score, 1)
+
 
 
 

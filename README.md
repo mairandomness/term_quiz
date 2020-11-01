@@ -61,7 +61,7 @@ chmod +x test.py
 The quiz works by reading a JSON file with questions, each question having the fields: question, correct, incorrect. A valid question is considered one that has 4 distinct alternatives in total.
 You can see examples of valid and invalid question formats in the test files.
 
-In case you want to change the questions in the quiz, you can edit the `Apprentice_TandemFor400_Data.json` or add your own JSON file and editting the main function in `quiz.py`:
+In case you want to change the questions in the quiz, you can edit the `Apprentice_TandemFor400_Data.json` file or add your own JSON file and editting the main function in `quiz.py`:
 ```
 if __name__ == '__main__':
     quiz = Game()
