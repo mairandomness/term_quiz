@@ -1,6 +1,6 @@
-# Term quiz
+# Terminal quiz
 
-This is an application that launches a multiple test quiz on the terminal, using Python and the blessed library
+This is an application that launches a quiz with multiple choice questions on the terminal, using Python and the blessed library
 
 ## Requirements for running it
 
@@ -31,7 +31,6 @@ python3 quiz.py
 or
 
 ```
-chmod +x quiz.py
 ./quiz.py
 ```
 
@@ -44,7 +43,7 @@ To run the tests:
 cd term_quiz
 ```
 
-2. To run the quiz you can type
+2. To run the test results you can type
 ```
 python3 test.py
 ```
@@ -52,32 +51,31 @@ python3 test.py
 or
 
 ```
-chmod +x test.py
-./quiz.py
+./test.py
 ```
 
 ## Additional information
 
 The quiz works by reading a JSON file with questions, each question having the fields: question, correct, incorrect. A valid question is considered one that has 4 distinct alternatives in total.
-You can see examples of valid and invalid question formats in the test files.
+You can see examples of valid and invalid question formats in the test files or you can see the considerations made in the `is_valid_question` function in the `quiz.py` file.
 
-In case you want to change the questions in the quiz, you can edit the `Apprentice_TandemFor400_Data.json` file or add your own JSON file and editting the main function in `quiz.py`:
+In case you want to change the questions in the quiz, you can edit the `Apprentice_TandemFor400_Data.json` file or add your own JSON file and edit the main function in `quiz.py`:
 ```
 if __name__ == '__main__':
-    quiz = Game()
-    quiz.set_data(<YOUR_FILE_RELATIVE_PATH_HERE>)
+    quiz = Quiz()
+    quiz.load_data(<YOUR_FILE_RELATIVE_PATH_HERE>)
     quiz.run_game()
 ```
 
-#### Assumptions on the project proposal
-* A round of trivia has 10 Questions
+#### Assumptions on the original project proposal
+* A round of trivia has 10 questions
 * All questions are multiple-choice questions
 * Your score does not need to update in real time
 * Results can update on form submit, button click, or any interaction you choose
 * We will provide you with the trivia data such as the questions, correct and incorrect answers via a
 JSON file.
 
-#### Acceptance criteria on the project proposal
+#### Acceptance criteria on the original project proposal
 * A user can view questions.
 * Questions with their multiple choice options must be displayed one at a time.
 * Questions should not repeat in a round.

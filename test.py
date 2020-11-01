@@ -3,66 +3,66 @@
 import unittest
 from unittest.mock import patch
 
-from quiz import Game
+from quiz import Quiz
 
 
 @patch("interface.InputOutput")
 class TestQuiz(unittest.TestCase):
 
-    def test_set_data(self, mock_io):
+    def test_load_data(self, mock_io):
         io = mock_io()
-        quiz = Game()
-        quiz.set_data("test_files/no_valid.json")
+        quiz = Quiz()
+        quiz.load_data("test_files/no_valid.json")
         self.assertEqual(len(quiz.data), 0)
         self.assertEqual(io.print_alert.call_count, 1)
-        self.assertIn("good bye", io.print_alert.call_args[0][0])
+        self.assertIn("The source file", io.print_alert.call_args[0][0])
 
         io.reset_mock()
-        quiz = Game()
-        quiz.set_data("test_files/two_questions.json")
+        quiz = Quiz()
+        quiz.load_data("test_files/two_questions.json")
         self.assertEqual(len(quiz.data), 2)
         self.assertEqual(io.print_alert.call_count, 2)
         self.assertIn("will continue", io.print_alert.call_args[0][0])
 
         io.reset_mock()
-        quiz = Game()
-        quiz.set_data("test_files/twenty_questions.json")
+        quiz = Quiz()
+        quiz.load_data("test_files/twenty_questions.json")
         self.assertEqual(len(quiz.data), 20)
         io.print_alert.assert_not_called()
 
     def test_get_questions(self, mock_io):
-        quiz = Game()
+        quiz = Quiz()
         self.assertEqual(quiz.get_questions(), [])
 
-        quiz = Game()
-        quiz.set_data("test_files/two_questions.json")
+        quiz = Quiz()
+        quiz.load_data("test_files/two_questions.json")
         self.assertEqual(len(quiz.get_questions()), 2)
 
-        quiz = Game()
-        quiz.set_data("test_files/twenty_questions.json")
+        quiz = Quiz()
+        quiz.load_data("test_files/twenty_questions.json")
         self.assertEqual(len(quiz.get_questions()), 10)
 
     def test_get_shuffled_answers(self, mock_io):
-        quiz = Game()
+        quiz = Quiz()
         with self.assertRaises(KeyError):
             quiz.get_shuffled_answers({})
 
         with self.assertRaises(KeyError):
             quiz.get_shuffled_answers({'incorrect': ['a']})
 
-        quiz = Game()
-        quiz.set_data("test_files/two_questions.json")
+        quiz = Quiz()
+        quiz.load_data("test_files/two_questions.json")
         questions = quiz.get_questions()
         self.assertEqual(len(quiz.get_shuffled_answers(questions[0])), 4)
 
-        quiz = Game()
-        quiz.set_data("test_files/twenty_questions.json")
+        quiz = Quiz()
+        quiz.load_data("test_files/twenty_questions.json")
         questions = quiz.get_questions()
         self.assertEqual(len(quiz.get_shuffled_answers(questions[9])), 4)
 
     def test_check_answer(self, mock_io):
-        quiz = Game()
-        quiz.set_data("test_files/twenty_questions.json")
+        quiz = Quiz()
+        quiz.load_data("test_files/twenty_questions.json")
         questions = quiz.get_questions()
 
         for question in questions:
@@ -89,31 +89,34 @@ class TestQuiz(unittest.TestCase):
         io = mock_io()
 
         io.reset_mock()
-        quiz = Game()
-        quiz.run_game()
-        io.print_alert.assert_not_called()
-        self.assertEqual(quiz.score, 0)
-
-        io.reset_mock()
-        quiz = Game()
-        quiz.set_data("test_files/no_valid.json")
+        quiz = Quiz()
         quiz.run_game()
         self.assertEqual(io.print_alert.call_count, 1)
-        io.print_question.assert_not_called()
-        io.print_alternatives.assert_not_called()
+        self.assertIn("good bye", io.print_alert.call_args[0][0])
         self.assertEqual(quiz.score, 0)
 
         io.reset_mock()
-        quiz = Game()
-        quiz.set_data("test_files/two_questions.json")
+        quiz = Quiz()
+        quiz.load_data("test_files/no_valid.json")
+        self.assertIn("The source file", io.print_alert.call_args[0][0])
+        quiz.run_game()
+        self.assertEqual(io.print_alert.call_count, 2)
+        self.assertIn("good bye", io.print_alert.call_args[0][0])
+        io.print_question.assert_not_called()
+        io.print_choices.assert_not_called()
+        self.assertEqual(quiz.score, 0)
+
+        io.reset_mock()
+        quiz = Quiz()
+        quiz.load_data("test_files/two_questions.json")
         quiz.run_game()
         self.assertEqual(io.print_question.call_count, 2)
         self.assertEqual(io.get_input.call_count, 2)
         self.assertEqual(quiz.score, 0)
 
         io.reset_mock()
-        quiz = Game()
-        quiz.set_data("test_files/twenty_questions.json")
+        quiz = Quiz()
+        quiz.load_data("test_files/twenty_questions.json")
         quiz.run_game()
         self.assertEqual(io.print_question.call_count, 10)
         self.assertEqual(io.get_input.call_count, 10)
@@ -121,8 +124,8 @@ class TestQuiz(unittest.TestCase):
 
         io.reset_mock()
         io.get_input.return_value = "Devmynd"
-        quiz = Game()
-        quiz.set_data("test_files/two_questions.json")
+        quiz = Quiz()
+        quiz.load_data("test_files/two_questions.json")
         quiz.run_game()
         self.assertEqual(io.print_question.call_count, 2)
         self.assertEqual(io.get_input.call_count, 2)
