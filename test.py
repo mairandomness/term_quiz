@@ -129,7 +129,5 @@ class TestQuiz(unittest.TestCase):
         self.assertEqual(quiz.score, 1)
 
 
-
-
 if __name__ == '__main__':
     unittest.main()
