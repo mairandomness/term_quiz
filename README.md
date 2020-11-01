@@ -37,7 +37,7 @@ chmod +x quiz.py
 
 ## Tests
 
-To run the tests
+To run the tests:
 
 1. Enter the folder from the terminal.
 ```

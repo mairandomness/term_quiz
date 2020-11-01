@@ -1,67 +1,121 @@
 #!/usr/bin/env python3
 
 import unittest
+from unittest.mock import patch
 
 from quiz import Game
 
+
+@patch("interface.InputOutput")
 class TestQuiz(unittest.TestCase):
-    def test_set_data(self):
+
+    def test_set_data(self, mock_io):
+        io = mock_io()
         quiz = Game()
-        # the fullscreen is in the tests to make the output cleaner
-        with quiz.term.fullscreen():
-            quiz.set_data("test_files/no_valid.json")
-            self.assertEqual(len(quiz.data), 0)
+        quiz.set_data("test_files/no_valid.json")
+        self.assertEqual(len(quiz.data), 0)
+        self.assertEqual(len(io.print_alert.call_args_list), 1)
+        self.assertIn("good bye", io.print_alert.call_args[0][0])
 
+        io.reset_mock()
         quiz = Game()
-        with quiz.term.fullscreen():
-            quiz.set_data("test_files/two_questions.json")
-            self.assertEqual(len(quiz.data), 2)
+        quiz.set_data("test_files/two_questions.json")
+        self.assertEqual(len(quiz.data), 2)
+        self.assertEqual(len(io.print_alert.call_args_list), 2)
+        self.assertIn("will continue", io.print_alert.call_args[0][0])
 
+        io.reset_mock()
         quiz = Game()
-        with quiz.term.fullscreen():
-            quiz.set_data("test_files/twenty_questions.json")
-            self.assertEqual(len(quiz.data), 20)
+        quiz.set_data("test_files/twenty_questions.json")
+        self.assertEqual(len(quiz.data), 20)
+        io.print_alert.assert_not_called()
 
-
-
-    def test_set_questions(self):
+    def test_get_questions(self, mock_io):
         quiz = Game()
-        with quiz.term.fullscreen():
-            quiz.set_questions()
-            self.assertEqual(quiz.questions, [])
-
-        quiz = Game()
-        with quiz.term.fullscreen():
-            quiz.set_data("test_files/two_questions.json")
-            quiz.set_questions()
-            self.assertEqual(len(quiz.questions), 2)
+        self.assertEqual(quiz.get_questions(), [])
 
         quiz = Game()
-        with quiz.term.fullscreen():
-            quiz.set_data("test_files/twenty_questions.json")
-            quiz.set_questions()
-            self.assertEqual(len(quiz.questions), 10)
-
-    def test_get_shuffled_answers(self):
-        quiz = Game()
-        with quiz.term.fullscreen():
-            quiz.set_questions()
-            self.assert_Equal(len(quiz.get_shuffled_answers(), 4))
-            self.assertIsInstance(quiz.get_shuffled_answers[0], str)
+        quiz.set_data("test_files/two_questions.json")
+        self.assertEqual(len(quiz.get_questions()), 2)
 
         quiz = Game()
-        with quiz.term.fullscreen():
-            quiz.set_data("test_files/two_questions.json")
-            quiz.set_questions()
-            self.assert_Equal(len(quiz.get_shuffled_answers(), 4))
-            self.assertIsInstance(quiz.get_shuffled_answers[0], str)
+        quiz.set_data("test_files/twenty_questions.json")
+        self.assertEqual(len(quiz.get_questions()), 10)
+
+    def test_get_shuffled_answers(self, mock_io):
+        quiz = Game()
+        with self.assertRaises(KeyError):
+            quiz.get_shuffled_answers({})
+
+        with self.assertRaises(KeyError):
+            quiz.get_shuffled_answers({'incorrect': ['a']})
 
         quiz = Game()
-        with quiz.term.fullscreen():
-            quiz.set_data("test_files/twenty_questions.json")
-            quiz.set_questions()
-            self.assert_Equal(len(quiz.get_shuffled_answers(), 4))
-            self.assertIsInstance(quiz.get_shuffled_answers[0], str)
+        quiz.set_data("test_files/two_questions.json")
+        questions = quiz.get_questions()
+        self.assertEqual(len(quiz.get_shuffled_answers(questions[0])), 4)
+
+        quiz = Game()
+        quiz.set_data("test_files/twenty_questions.json")
+        questions = quiz.get_questions()
+        self.assertEqual(len(quiz.get_shuffled_answers(questions[9])), 4)
+
+    def test_check_answer(self, mock_io):
+        quiz = Game()
+        quiz.set_data("test_files/twenty_questions.json")
+        questions = quiz.get_questions()
+
+        for question in questions:
+            self.assertEqual(quiz.score, 0)
+
+            quiz.check_answer(question['incorrect'][0], question)
+            self.assertEqual(quiz.score, 0)
+
+            quiz.check_answer(question['correct'], question)
+            self.assertEqual(quiz.score, 1)
+
+            quiz.check_answer(question['correct'], question)
+            self.assertEqual(quiz.score, 2)
+
+            quiz.check_answer(question['incorrect'][1], question)
+            self.assertEqual(quiz.score, 2)
+
+            quiz.check_answer(question['incorrect'][2], question)
+            self.assertEqual(quiz.score, 2)
+
+            quiz.score = 0
+
+    def test_run_game(self, mock_io):
+        io = mock_io
+
+        io.reset_mock()
+        quiz = Game()
+        quiz.run_game()
+        io.print_alert.assert_not_called()
+
+        io.reset_mock()
+        quiz = Game()
+        quiz.set_data("test_files/no_valid.json")
+        quiz.run_game()
+        self.assertEqual(len(io.print_alert.call_args_list), 1)
+        io.print_question.assert_not_called()
+        io.print_alternatives.assert_not_called()
+
+        io.reset_mock()
+        quiz = Game()
+        quiz.set_data("test_files/two_questions.json")
+        quiz.run_game()
+        self.assertEqual(len(io.print_question.call_args_list), 2)
+        self.assertEqual(len(io.print_alternatives.call_args_list), 2)
+
+        io.reset_mock()
+        quiz = Game()
+        quiz.set_data("test_files/two_questions.json")
+        quiz.run_game()
+        self.assertEqual(len(io.print_question.call_args_list), 10)
+        self.assertEqual(len(io.print_alternatives.call_args_list), 10)
+
+
 
 if __name__ == '__main__':
     unittest.main()
